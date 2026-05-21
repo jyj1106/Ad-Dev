@@ -108,13 +108,6 @@ public class CharacterController3D : MonoBehaviour
 
         if (Input.GetMouseButton(0) && _isDragging)
         {
-            /*
-            Vector2 delta = (Vector2)Input.mousePosition - _lastMousePos;
-            _lastMousePos = Input.mousePosition;
-
-            if (delta.magnitude > dragDeadZone)
-                MoveCharacter(delta.normalized);*/
-
             Vector2 offset = Input.mousePosition - (Vector3)_lastMousePos;
             Vector2 clamped = Vector2.ClampMagnitude(offset, joystickRadius);
             Vector2 joystickInput = clamped / joystickRadius;
@@ -132,8 +125,6 @@ public class CharacterController3D : MonoBehaviour
             _isDragging = false;
             ResetJoystick();
         }
-            
-
     }
 
     // ──────────────────────────────────────────────
