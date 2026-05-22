@@ -14,6 +14,10 @@ public class CharacterController3D : MonoBehaviour
     [SerializeField] private float rotationSpeed = 10f;
     [SerializeField] private Animator _animator;
 
+    [Header("중력 설정")]
+    [SerializeField] private float gravity = -9.81f;
+    private float _verticalVelocity;
+
     [Header("카메라 (이동 기준축 계산용)")]
     [Tooltip("독립 카메라 오브젝트의 Transform. 비워두면 Camera.main 자동 사용.")]
     [SerializeField] private Transform cameraTransform;
@@ -65,6 +69,8 @@ public class CharacterController3D : MonoBehaviour
             HandleMobileInput();
         else
             HandlePCInput();
+
+        ApplyGravity();
     }
 
     // ──────────────────────────────────────────────
@@ -178,6 +184,14 @@ public class CharacterController3D : MonoBehaviour
 
         Vector3 moveDir = (_camForward * input.y + _camRight * input.x).normalized;
 
+        if (_cc.isGrounded)
+            _verticalVelocity = -2f;  // 바닥에 붙어있게
+        else
+            _verticalVelocity += gravity * Time.deltaTime;
+
+        Vector3 velocity = moveDir * moveSpeed;
+        velocity.y = _verticalVelocity;
+
         _cc.Move(moveDir * moveSpeed * Time.deltaTime);
         MoveAnimation(true);
 
@@ -190,6 +204,16 @@ public class CharacterController3D : MonoBehaviour
                 transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
         }
     }
+
+    private void ApplyGravity()
+{
+    if (_cc.isGrounded)
+        _verticalVelocity = -2f;
+    else
+        _verticalVelocity += gravity * Time.deltaTime;
+
+    _cc.Move(new Vector3(0, _verticalVelocity, 0) * Time.deltaTime);
+}
 
     // ──────────────────────────────────────────────
     // 조이스틱 UI 헬퍼

@@ -5,11 +5,13 @@ TagManager:
   serializedVersion: 2
   tags:
   - Item
+  - Rock
+  - Mine
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Rock
   - Water
   - UI
   - 

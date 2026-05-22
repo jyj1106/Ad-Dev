@@ -11,6 +11,6 @@ public class ItemData : ScriptableObject
     [Header("현재 해당 아이템을 지닌 개수")]
     public int currItemCount;
 
-    [Header("아이템 ID (스택 확인용)")]
+    [Header("아이템 ID")]
     public string itemID;
 }

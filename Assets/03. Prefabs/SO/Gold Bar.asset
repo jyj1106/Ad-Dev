@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxItemCount: 10
   currItemCount: 0
-  itemID: Item_01
+  itemID: Item_03
