@@ -12,10 +12,7 @@ public class CharacterController3D : MonoBehaviour
     [Header("이동 설정")]
     [SerializeField] private float moveSpeed     = 5f;
     [SerializeField] private float rotationSpeed = 10f;
-
-    [Header("PC 드래그 설정")]
-    [Tooltip("드래그 픽셀이 이 값 이상일 때만 이동 처리 (오차 방지)")]
-    [SerializeField] private float dragDeadZone = 2f;
+    [SerializeField] private Animator _animator;
 
     [Header("카메라 (이동 기준축 계산용)")]
     [Tooltip("독립 카메라 오브젝트의 Transform. 비워두면 Camera.main 자동 사용.")]
@@ -101,6 +98,7 @@ public class CharacterController3D : MonoBehaviour
         {
             _isDragging   = true;
             _lastMousePos = Input.mousePosition;
+            _joystickInput = Vector2.zero;
 
             PositionJoystick(_lastMousePos);
             SetJoystickVisible(true);
@@ -110,14 +108,14 @@ public class CharacterController3D : MonoBehaviour
         {
             Vector2 offset = Input.mousePosition - (Vector3)_lastMousePos;
             Vector2 clamped = Vector2.ClampMagnitude(offset, joystickRadius);
-            Vector2 joystickInput = clamped / joystickRadius;
+            _joystickInput = clamped / joystickRadius;
 
-            joystickInput = clamped / joystickRadius;
+            _joystickInput = clamped / joystickRadius;
 
             if (joystickHandle != null)
                 joystickHandle.anchoredPosition = clamped;
 
-            MoveCharacter(joystickInput);
+            MoveCharacter(_joystickInput);
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -181,6 +179,7 @@ public class CharacterController3D : MonoBehaviour
         Vector3 moveDir = (_camForward * input.y + _camRight * input.x).normalized;
 
         _cc.Move(moveDir * moveSpeed * Time.deltaTime);
+        MoveAnimation(true);
 
         // 캐릭터 메시를 이동 방향으로 부드럽게 회전
         // 카메라는 독립 오브젝트이므로 이 회전에 전혀 영향받지 않음
@@ -223,5 +222,11 @@ public class CharacterController3D : MonoBehaviour
         _joystickTouchId = -1;
         _joystickInput   = Vector2.zero;
         SetJoystickVisible(false);
+        MoveAnimation(false);
+    }
+
+    private void MoveAnimation(bool isMove)
+    {
+        _animator.SetBool("IsMove", isMove);
     }
 }

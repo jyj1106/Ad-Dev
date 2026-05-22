@@ -9,8 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ca44414e55927e4db2f6529b720c894, type: 3}
+  m_Script: {fileID: 11500000, guid: 66e9368a5c096db44878915db25169d8, type: 3}
   m_Name: Stone
   m_EditorClassIdentifier: 
   maxItemCount: 10
   currItemCount: 0
+  itemID: Item_01
