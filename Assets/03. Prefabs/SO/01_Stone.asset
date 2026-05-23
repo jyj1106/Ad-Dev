@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: 01_Stone
   m_EditorClassIdentifier: 
   maxItemCount: 10
-  currItemCount: 4
+  currItemCount: 11
   itemID: Item_01

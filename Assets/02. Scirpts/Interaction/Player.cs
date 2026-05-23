@@ -1,61 +1,95 @@
+using DG.Tweening;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    /* ½ºÅ©¸³Æ® ¿ªÇÒ ¼³¸í
+    /* ìŠ¤í¬ë¦½íŠ¸ ì—­í•  ì„¤ëª…
      * 
-     * ÇÃ·¹ÀÌ¾îÀÇ Ãæµ¹(Trigger)·Î ÀÎÇÑ »óÈ£ÀÛ¿ë ½ºÅ©¸³Æ®
+     * í”Œë ˆì´ì–´ì˜ ì¶©ëŒ(Trigger)ë¡œ ì¸í•œ ìƒí˜¸ì‘ìš© ìŠ¤í¬ë¦½íŠ¸
      * 
-     * ¾ÆÀÌÅÛÀº µî¿¡ 2Á¾·ùÀÇ ¾ÆÀÌÅÛÀ» °¢ ½ºÅÃ ¼ö ¸¸Å­ µé ¼ö ÀÖ¹Ê (ÇöÀç´Â µ¹°ú µ· 2Á¾·ù)
-     * --¿¹¿Ü·Î ¼ö°©ÀÇ °æ¿ì ½ºÅÃ·ù ¾ÆÀÌÅÛÀÌÁö¸¸ Á¤¸é¿¡¼­ Á÷Á¢ µå´Â ÀÛ¾÷À» ÁøÇàÇÏ±â¿¡ ¾ÆÀÌÅÛÀÌ ¾Æ´Ï¶ó Àåºñ·Î Ãë±Ş--
+     * ì•„ì´í…œì€ ë“±ì— 2ì¢…ë¥˜ì˜ ì•„ì´í…œì„ ê° ìŠ¤íƒ ìˆ˜ ë§Œí¼ ë“¤ ìˆ˜ ìˆìŒ (í˜„ì¬ëŠ” ëŒê³¼ ëˆ 2ì¢…ë¥˜)
+     * --ì˜ˆì™¸ë¡œ ìˆ˜ê°‘ì˜ ê²½ìš° ìŠ¤íƒë¥˜ ì•„ì´í…œì´ì§€ë§Œ ì •ë©´ì—ì„œ ì§ì ‘ ë“œëŠ” ì‘ì—…ì„ ì§„í–‰í•˜ê¸°ì— ì•„ì´í…œì´ ì•„ë‹ˆë¼ ì¥ë¹„ë¡œ ì·¨ê¸‰--
      * 
-     * Ã¤Áı ±¸¿ª ÁøÀÔ ½Ã ¾÷±×·¹ÀÌµå »óÅÂ¿¡ ÇØ´çÇÏ´Â ¾ÆÀÌÅÛÀ» Á¤¸é¿¡ ÀåÂø, ÀÌÅ» ½Ã ÀåÂøÇØÁ¦
+     * ì±„ì§‘ êµ¬ì—­ ì§„ì… ì‹œ ì—…ê·¸ë ˆì´ë“œ ìƒíƒœì— í•´ë‹¹í•˜ëŠ” ì•„ì´í…œì„ ì •ë©´ì— ì¥ì°©, ì´íƒˆ ì‹œ ì¥ì°©í•´ì œ
      */
 
-    private CharacterController3D _controller;
+    [SerializeField] private CharacterController3D _controller;
+    [SerializeField] private Mining _mining;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private ItemData _stoneData;
 
     [SerializeField] private GameObject[] _ItemPos;
-    [SerializeField] private GameObject[] _Equipments;
+    [SerializeField] private GameObject _MaxText;
+    [SerializeField] private GameObject _Arrow;
     [SerializeField] private Vector3 _StackGap;
-    [SerializeField] private Vector3 _OverlapBox_Center;
-    [SerializeField] private Vector3 _OverlapBox_Size;
-    [SerializeField] private int _upgradeLv;
-    [SerializeField] private LayerMask _layerRock;
 
     private Stack<GameObject> _CashStack = new Stack<GameObject>();
     private Stack<GameObject> _StoneStack = new Stack<GameObject>();
+    private Coroutine _redeemCoroutine;
+
+    private bool _isMining = false;
 
     private void Awake()
     {
         _controller = GetComponent<CharacterController3D>();
+        _mining = transform.GetChild(0).GetComponent<Mining>();
+        _animator = transform.GetChild(0).GetComponent<Animator>();
+
+        _stoneData.currItemCount = 0;
     }
 
-    private void Start()
+    private void FixedUpdate()
     {
-        _upgradeLv = 0;
-        Collider[] overlapBox = Physics.OverlapBox(_OverlapBox_Center, _OverlapBox_Size, Quaternion.identity, _layerRock);
+        if (_isMining)                                      // ê´‘ì‚° ì•ˆì— ìˆì„ ë•Œ
+        {
+            _mining.MakeOverlapBox();
+
+            if (_mining.overlapBox.Length > 0)              // ì£¼ë³€ì— ë°”ìœ„ê°€ ìˆë‹¤ë©´
+                _animator.SetBool("IsMining", true);
+            else
+                _animator.SetBool("IsMining", false);
+        }
+
+        if(_stoneData.currItemCount < _stoneData.maxItemCount)
+        {
+            _MaxText.SetActive(false);
+        }
     }
 
-    /* Á¢ÃË ½Ã ÅÂ±× È®ÀÎ
+    /* ì ‘ì´‰ ì‹œ íƒœê·¸ í™•ì¸
      * 
-     * ¾ÆÀÌÅÛÀÏ ½Ã: 
-     *  ÇØ´ç ¾ÆÀÌÅÛÀ» ´õ Áö´Ò ¼ö ÀÖ´Ù¸é -> ¾ÆÀÌÅÛ ½×±â
-     *  ¾Æ´Ï¶ó¸é -> MAX Ç¥½Ã 
+     * ì•„ì´í…œì¼ ì‹œ: 
+     *  í•´ë‹¹ ì•„ì´í…œì„ ë” ì§€ë‹ ìˆ˜ ìˆë‹¤ë©´ -> ì•„ì´í…œ ìŒ“ê¸°
+     *  ì•„ë‹ˆë¼ë©´ -> MAX í‘œì‹œ 
      */
     private void OnTriggerEnter(Collider other)
     {
-        if (other.transform.CompareTag("Item"))                                         // ºÎµúÈù°Ô ¾ÆÀÌÅÛÀÏ ¶§
+        if (other.transform.CompareTag("Item"))                                         // ë¶€ë”ªíŒê²Œ ì•„ì´í…œì¼ ë•Œ
         {
             ItemData itemInfo = other.GetComponent<InteractableOBJs>().itemInfo;
 
-            if (itemInfo.currItemCount <= itemInfo.maxItemCount)                        // ¾ÆÀÌÅÛÀ» ´õ ½×À» ¼ö ÀÖ´Ù¸é
+            if (itemInfo.currItemCount <= itemInfo.maxItemCount)                        // ì•„ì´í…œì„ ë” ìŒ“ì„ ìˆ˜ ìˆë‹¤ë©´
                 StackItem(other.gameObject, itemInfo);
-            
         }
+
         if (other.transform.CompareTag("Mine"))
         {
-            _Equipments[_upgradeLv].SetActive(true);
+            _isMining = true;
+            _animator.SetLayerWeight(1, 1f);
+            _mining._Equipments[_mining._upgradeLv].SetActive(true);
+        }
+
+        if (other.transform.CompareTag("Station"))
+        {
+            Station stationInfo = other.GetComponent<Station>();
+            stationInfo.TryInteract(this);
+        }
+
+        if (other.transform.CompareTag("Redeem"))
+        {
+            StartCoroutine(RedeemLoop(other.transform.GetChild(0)));
         }
     }
 
@@ -63,7 +97,21 @@ public class Player : MonoBehaviour
     {
         if (other.transform.CompareTag("Mine"))
         {
-            _Equipments[_upgradeLv].SetActive(false);
+            _isMining = false;
+            _animator.SetLayerWeight(1, 0f);
+            _mining._Equipments[_mining._upgradeLv].SetActive(false);
+        }
+
+        if (other.transform.CompareTag("Station"))
+        {
+            Station stationInfo = other.GetComponent<Station>();
+            stationInfo.StopInteract();
+        }
+
+        if (other.transform.CompareTag("Redeem"))
+        {
+            StopCoroutine(_redeemCoroutine);
+            _redeemCoroutine = null;
         }
     }
 
@@ -85,35 +133,34 @@ public class Player : MonoBehaviour
 
             case "Item_02":
                 _CashStack.Push(other);
-                PlaceItem(other, itemInfo);
+               PlaceItem(other, itemInfo);
                 break;
         }
-
     }
 
-    private (int index, bool isFirst) CheckBelongings(ItemData itemInfo)     // ¼ÒÁöÇ°À» È®ÀÎÇÏ°í ±×¿¡ µû¶ó µé¾î°¥ ¼ö ÀÖ´Â °ø°£À» ¹İÈ¯
+    public (int index, bool isBlank) CheckBelongings(ItemData itemInfo)     // ì†Œì§€í’ˆì„ í™•ì¸í•˜ê³  ê·¸ì— ë”°ë¼ ë“¤ì–´ê°ˆ ìˆ˜ ìˆëŠ” ê³µê°„ì„ ë°˜í™˜
     {
         if (_ItemPos[0].transform.childCount == 0)
         {
-            if(_ItemPos[1].transform.childCount == 0)                           // ¼ÒÁöÇ°ÀÌ ÇÏ³ªµµ ¾øÀ» ¶§
+            if (_ItemPos[1].transform.childCount == 0)                          // ì†Œì§€í’ˆì´ í•˜ë‚˜ë„ ì—†ì„ ë•Œ
                 return (0, true);
-            else                                                                // Ã¹ ¹øÂ°°¡ ºñ¾îÀÖ´Ù¸é µÎ ¹øÂ° Ä­À» Ã¹¹øÂ°·Î ÀÌµ¿
+            else                                                                // ì²« ë²ˆì§¸ê°€ ë¹„ì–´ìˆë‹¤ë©´ ë‘ ë²ˆì§¸ ì¹¸ì„ ì²«ë²ˆì§¸ë¡œ ì´ë™
             {
                 _ItemPos[1].transform.GetChild(0).parent = _ItemPos[0].transform;
                 _ItemPos[0].transform.localPosition = Vector3.zero;
-                CheckBelongings(itemInfo);                                      // Àç±Í
+                CheckBelongings(itemInfo);                                      // ì¬ê·€
             }
         }
-        GameObject pos1Item = _ItemPos[0].transform.GetChild(0).gameObject;        
+        GameObject pos1Item = _ItemPos[0].transform.GetChild(0).gameObject;
         string pos1ID = pos1Item.GetComponent<InteractableOBJs>().itemInfo.itemID;
 
-        if (pos1ID == itemInfo.itemID) return (0, false);                       // 1¹ø Ä­ÀÌ µ¿ÀÏ ¾ÆÀÌÅÛÀÏ ¶§
-        else if (pos1ID == "Item_01")                                           // 1¹ø Ä­ÀÌ µ¿ÀÏÇÏÁö ¾Ê°í, ¹ÙÀ§ÀÏ ¶© 2¹ø¿¡ ¹èÄ¡
+        if (pos1ID == itemInfo.itemID) return (0, false);                       // 1ë²ˆ ì¹¸ì´ ë™ì¼ ì•„ì´í…œì¼ ë•Œ
+        else if (pos1ID == "Item_01")                                           // 1ë²ˆ ì¹¸ì´ ë™ì¼í•˜ì§€ ì•Šê³ , ë°”ìœ„ì¼ ë• 2ë²ˆì— ë°°ì¹˜
         {
-            if (_ItemPos[1].transform.childCount == 0) return (1, true);        // 2¹ø Ä­ÀÌ °ø¶õÀÏ ¶§
-            else return (1, false);                                             // 2¹ø Ä­ÀÇ µ·¿¡ ¹èÄ¡
+            if (_ItemPos[1].transform.childCount == 0) return (1, true);        // 2ë²ˆ ì¹¸ì´ ê³µë€ì¼ ë•Œ
+            else return (1, false);                                             // 2ë²ˆ ì¹¸ì˜ ëˆì— ë°°ì¹˜
         }
-        else                                                                    // 1¹ø Ä­ÀÌ µ·ÀÌ¶ó¸é, 2¹øÀ¸·Î ÀÌµ¿½ÃÅ´
+        else                                                                    // 1ë²ˆ ì¹¸ì´ ëˆì´ë¼ë©´, 2ë²ˆìœ¼ë¡œ ì´ë™ì‹œí‚´
         {
             pos1Item.transform.parent = _ItemPos[1].transform;
             pos1Item.transform.localPosition = Vector3.zero;
@@ -121,13 +168,54 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void PlaceItem(GameObject other, ItemData itemInfo)             // µî¿¡ ¾ÆÀÌÅÛÀ» ¹èÄ¡
+    private IEnumerator RedeemLoop(Transform endPos)
+    {
+        while (true)
+        {
+            if (endPos.childCount > 0)
+            {
+                // ë¦¬ìŠ¤íŠ¸ë¡œ ë¯¸ë¦¬ ë³µì‚¬ (childCount ë³€í™” ë°©ì§€)
+                List<GameObject> children = new List<GameObject>();
+                for (int i = 0; i < endPos.childCount; i++)
+                    children.Add(endPos.GetChild(i).gameObject);
+
+                foreach (GameObject child in children)
+                {
+                    ItemData itemInfo = child.GetComponent<InteractableOBJs>().itemInfo;
+
+                    if (itemInfo.currItemCount >= itemInfo.maxItemCount)
+                    {
+                        _MaxText.SetActive(true);
+                        continue;
+                    }
+
+                    // ìŠ¤íƒì— Push
+                    switch (itemInfo.itemID)
+                    {
+                        case "Item_01": _StoneStack.Push(child); break;
+                        case "Item_02": _CashStack.Push(child); break;
+                        default: continue;
+                    }
+
+                    itemInfo.currItemCount++;
+                    PlaceItem(child, itemInfo);
+
+                    yield return new WaitForSeconds(0.15f);  // ì•„ì´í…œ ê°„ ê°„ê²©
+                }
+            }
+
+            yield return new WaitForSeconds(0.2f);  // ë‹¤ìŒ ë£¨í”„ ê°„ê²©
+        }
+    }
+
+    private void PlaceItem(GameObject other, ItemData itemInfo)             // ë“±ì— ì•„ì´í…œì„ ë°°ì¹˜
     {
         var (index, isFirst) = CheckBelongings(itemInfo);
         if (isFirst)
         {
             other.transform.parent = _ItemPos[index].transform;
             other.transform.localPosition = Vector3.zero;
+            other.transform.DOScale(1f, 0.4f).From(0f).SetEase(Ease.OutBack);
             other.transform.localRotation = Quaternion.Euler(Vector3.zero);
         }
         else
@@ -139,24 +227,27 @@ public class Player : MonoBehaviour
 
             if (itemInfo.itemID == "Item_02")
                 other.transform.localPosition = Vector3.zero + ((_CashStack.Count - 1) * _StackGap);
+
+            other.transform.DOScale(1f, 0.4f).From(0f).SetEase(Ease.OutBack);
         }
-
-
     }
 
-    private void DigRock()
+    /// <summary>
+    /// Stationì´ ìš”êµ¬í•˜ëŠ” ì•„ì´í…œì„ í”Œë ˆì´ì–´ ì¸ë²¤í† ë¦¬ì—ì„œ êº¼ë‚´ ë°˜í™˜í•©ë‹ˆë‹¤.
+    /// í•´ë‹¹ ì•„ì´í…œì´ ì—†ìœ¼ë©´ nullì„ ë°˜í™˜í•©ë‹ˆë‹¤.
+    /// </summary>
+    public GameObject PopItem(string itemID)
     {
-        if(_upgradeLv == 0)
+        switch (itemID)
         {
-
-        }
-        if(_upgradeLv == 1)
-        {
-
-        }
-        if(_upgradeLv == 2)
-        {
-
+            case "Item_01":
+                return _StoneStack.Count > 0 ? _StoneStack.Pop() : null;
+            case "Item_02":
+                return _CashStack.Count > 0 ? _CashStack.Pop() : null;
+            default:
+                return null;
         }
     }
+
+    public Vector3 StackGap => _StackGap;
 }

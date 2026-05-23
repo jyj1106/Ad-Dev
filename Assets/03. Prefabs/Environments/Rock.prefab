@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1227612179298495802}
   - component: {fileID: 5327651400143347901}
   - component: {fileID: 8335204271735866669}
-  - component: {fileID: 2917803928743049450}
+  - component: {fileID: 9070731707500244270}
   m_Layer: 3
   m_Name: Rock
   m_TagString: Rock
@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6254256324150390649}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.0664022, y: -0.00000023841858, z: 2.0910988}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -106,7 +106,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0017176, y: 0.7555756, z: 0.7616252}
   m_Center: {x: 0.04947564, y: 0.3469552, z: -0.025930882}
---- !u!114 &2917803928743049450
+--- !u!114 &9070731707500244270
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -115,7 +115,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6254256324150390649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d859e2a55ca943649bc54fa7f9cac2ea, type: 3}
+  m_Script: {fileID: 11500000, guid: c6893fde62dcbe5458a892f424af8f68, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemInfo: {fileID: 0}
+  _stone: {fileID: 3799722218802315079, guid: c23baccbe96388e4182f7bdda4d0f6ff, type: 3}

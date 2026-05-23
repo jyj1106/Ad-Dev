@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: 02_Cash
   m_EditorClassIdentifier: 
   maxItemCount: 30
-  currItemCount: 3
+  currItemCount: 17
   itemID: Item_02

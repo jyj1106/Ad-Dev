@@ -1,22 +1,26 @@
-using System.Collections;
-using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class Rock : MonoBehaviour
 {
     [SerializeField] private GameObject _stone;
-
+    [SerializeField] private GameObject _Player;
     public void OnBreak()
     {
-        GameObject stone = Instantiate(_stone);
-        stone.transform.position = transform.position;
+        ItemData stoneData = _stone.GetComponent<InteractableOBJs>().itemInfo;
+
+        if (stoneData.currItemCount < stoneData.maxItemCount)
+        {
+            GameObject stone = Instantiate(_stone);
+            stone.transform.position = _Player.transform.position;
+            stone.transform.DOScale(1f, 0.4f).From(0f).SetEase(Ease.OutBack);
+        }        
         gameObject.SetActive(false);
-        Respawn(3);
+        Invoke("Respawn", 3f);
     }
 
-    IEnumerator Respawn(int seconds)
-    {
-        yield return new WaitForSeconds(seconds);
-        gameObject.SetActive(false);
+    public void Respawn()
+    {      
+        gameObject.SetActive(true);
     }
 }
